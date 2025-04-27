@@ -1,0 +1,197 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso No Autorizado - Cámaras de Seguridad</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #1a1a1a;
+      color: #ff3333;
+      font-family: 'Arial', sans-serif;
+      overflow-x: hidden;
+    }
+    .header {
+      text-align: center;
+      padding: 20px;
+      background-color: #000;
+      border-bottom: 2px solid #ff3333;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 2.5em;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .video-card {
+      background-color: #2b2b2b;
+      border: 1px solid #ff3333;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .video-card:hover {
+      transform: scale(1.05);
+    }
+    .video-card img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+    }
+    .video-card .description {
+      padding: 15px;
+    }
+    .video-card h3 {
+      margin: 0 0 10px;
+      font-size: 1.2em;
+      color: #ff6666;
+    }
+    .video-card p {
+      margin: 0;
+      font-size: 0.9em;
+      color: #cccccc;
+    }
+    .video-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .video-modal video {
+      max-width: 90%;
+      max-height: 90%;
+      border: 2px solid #ff3333;
+      border-radius: 8px;
+    }
+    .close-modal {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      color: #ff3333;
+      font-size: 2em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Sistema de Seguridad - Acceso Restringido</h1>
+  </div>
+  <div class="container">
+    <div class="video-card" onclick="openVideo('videos/video1.mp4')">
+      <img src="miniaturas/miniatura1.jpg" alt="Miniatura Video 1">
+      <div class="description">
+        <h3>Incidente en el Laboratorio A</h3>
+        <p>Grabación del intento de infiltración en el sector de investigación química a las 20:55.</p>
+      </div>
+    </div>
+    <div class="video-card" onclick="openVideo('videos/video2.mp4')">
+      <img src="miniaturas/miniatura2.jpg" alt="Miniatura Video 2">
+      <div class="description">
+        <h3>Brecha en el Perímetro</h3>
+        <p>Imágenes del perímetro exterior mostrando actividad sospechosa a las 20:45.</p>
+      </div>
+    </div>
+    <div class="video-card" onclick="openVideo('videos/video3.mp4')">
+      <img src="miniaturas/miniatura3.jpg" alt="Miniatura Video 3">
+      <div class="description">
+        <h3>Sabotaje en el Generador</h3>
+        <p>Video del intento de desactivación del generador principal a las 20:47.</p>
+      </div>
+    </div>
+    <div class="video-card" onclick="openVideo('videos/video4.mp4')">
+      <img src="miniaturas/miniatura4.jpg" alt="Miniatura Video 4">
+      <div class="description">
+        <h3>Acceso al Servidor Central</h3>
+        <p>Registro de un intruso intentando hackear el servidor a las 21:00.</p>
+      </div>
+    </div>
+    <div class="video-card" onclick="openVideo('videos/video5.mp4')">
+      <img src="miniaturas/miniatura5.jpg" alt="Miniatura Video 5">
+      <div class="description">
+        <h3>Escape del Complejo</h3>
+        <p>Grabación de la huida del intruso por el sector norte a las 21:10.</p>
+      </div>
+    </div>
+  </div>
+  <div class="video-modal" id="videoModal">
+    <span class="close-modal" onclick="closeVideo()">×</span>
+    <video controls autoplay>
+      <source src="" type="video/mp4">
+      Tu navegador no soporta el elemento de video.
+    </video>
+  </div>
+  <script>
+    function openVideo(videoSrc) {
+      const modal = document.getElementById('videoModal');
+      const video = modal.querySelector('video');
+      video.querySelector('source').src = videoSrc;
+      video.load();
+      modal.style.display = 'flex';
+    }
+    function closeVideo() {
+      const modal = document.getElementById('videoModal');
+      const video = modal.querySelector('video');
+      video.pause();
+      video.querySelector('source').src = '';
+      modal.style.display = 'none';
+    }
+  </script>
+</body>
+</html>
